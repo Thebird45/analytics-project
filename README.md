@@ -1,4 +1,4 @@
-# analytics-project
+# Pipeline lab 1
 
 Proyecto del semestre de Analitica de Datos. Pipeline construido de forma incremental
 lab por lab sobre el dataset Olist.
