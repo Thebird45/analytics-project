@@ -1,0 +1,23 @@
+# Datos crudos: no se versionan
+data/raw/*
+!data/raw/.gitkeep
+data/processed/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Herramientas
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Entornos y editores
+.env
+.idea/
+.vscode/
+.DS_Store

@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  calidad-y-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Instalar Python 3.12
+        run: uv python install 3.12
+
+      - name: Sincronizar dependencias
+        run: uv sync --all-groups
+
+      - name: Lint con ruff
+        run: uv run ruff check .
+
+      - name: Verificar formato
+        run: uv run ruff format --check .
+
+      - name: Ejecutar tests
+        run: uv run pytest -v
