@@ -23,5 +23,4 @@ htmlcov/
 .DS_Store
 
 # Tests
- test_*.py
-tests/*.py
+test_environment.pytests/*.py
