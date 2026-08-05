@@ -1,8 +1,9 @@
 """Modulo de ingesta de datos: carga de fuentes externas hacia el pipeline."""
 
-import pandas as pd
 from pathlib import Path
-from typing import cast, Literal
+from typing import Literal, cast
+
+import pandas as pd
 
 TipoMerge = Literal["left", "right", "inner", "outer", "cross", "left_anti", "right_anti"]
 
@@ -23,13 +24,15 @@ def cargar_csv(ruta: str) -> pd.DataFrame:
     try:
         dataframe = cast(pd.DataFrame, pd.read_csv(ruta))  # type: ignore[call-overload]
 
-    except FileNotFoundError:
-        raise FileNotFoundError(f"El archivo '{ruta}' no existe.")
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"El archivo '{ruta}' no existe.") from exc
 
     if dataframe.empty:
         raise ValueError(f"El archivo '{ruta}' no contiene filas de datos.")
 
     return dataframe
+
+
 def cargar_olist(data_dir: str) -> dict[str, pd.DataFrame]:
     """Carga las 5 tablas principales de Olist desde data_dir.
 
@@ -42,6 +45,7 @@ def cargar_olist(data_dir: str) -> dict[str, pd.DataFrame]:
     Returns:
         Dict con keys 'orders', 'items', 'customers', 'payments', 'reviews',
         cada uno mapeado a su DataFrame correspondiente.
+
     Raises:
         FileNotFoundError: si alguno de los 5 archivos no existe en data_dir.
     """
@@ -89,17 +93,17 @@ def cargar_olist(data_dir: str) -> dict[str, pd.DataFrame]:
             if cols_fecha:
                 df = cast(
                     pd.DataFrame,
-                    pd.read_csv(ruta_archivo, parse_dates=cols_fecha), # type: ignore[call-overload]
+                    pd.read_csv(ruta_archivo, parse_dates=cols_fecha),  # type: ignore[call-overload]
                 )
             else:
                 df = cast(
                     pd.DataFrame,
-                    pd.read_csv(ruta_archivo), # type: ignore[call-overload]
+                    pd.read_csv(ruta_archivo),  # type: ignore[call-overload]
                 )
-        except FileNotFoundError:
+        except FileNotFoundError as exc:
             raise FileNotFoundError(
                 f"No se encontró el archivo requerido para '{clave}' en la ruta: '{ruta_archivo}'"
-            )
+            ) from exc
 
         # Imprimimos la forma (filas x columnas)
         filas, columnas = df.shape
@@ -110,13 +114,12 @@ def cargar_olist(data_dir: str) -> dict[str, pd.DataFrame]:
     return tablas
 
 
-
 def join_verificado(
-        df_left: pd.DataFrame,
-        df_right: pd.DataFrame,
-        on: str | list[str],
-        how: TipoMerge = "left",
-        nombre: str = "join",
+    df_left: pd.DataFrame,
+    df_right: pd.DataFrame,
+    on: str | list[str],
+    how: TipoMerge = "left",
+    nombre: str = "join",
 ) -> pd.DataFrame:
     """Realiza un merge y verifica que el resultado no multiplique filas.
 
@@ -139,8 +142,14 @@ def join_verificado(
     # 1. Guardamos el número de filas esperadas (el total de la tabla izquierda)
     filas_esperadas = len(df_left)
 
-    # 2. Hacemos el merge entre ambos DataFrames
-    df_merged = pd.merge(df_left, df_right, on=on, how=how, validate="many_to_one")
+    # 2. Hacemos el merge, validando que la tabla derecha no tenga claves duplicadas
+    try:
+        df_merged = pd.merge(df_left, df_right, on=on, how=how, validate="many_to_one")
+    except pd.errors.MergeError as exc:
+        raise AssertionError(
+            f"Error en el join '{nombre}': la tabla derecha contiene claves duplicadas "
+            f"en la columna de unión, lo cual multiplicaría las filas del resultado."
+        ) from exc
 
     # 3. Guardamos el número de filas tras la unión
     filas_resultantes = len(df_merged)
@@ -154,6 +163,7 @@ def join_verificado(
         )
 
     return df_merged
+
 
 def construir_dataset_base(tablas: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Combina las tablas de Olist en un único DataFrame analítico.
@@ -179,21 +189,15 @@ def construir_dataset_base(tablas: dict[str, pd.DataFrame]) -> pd.DataFrame:
     dataframe_items = tablas["items"]
 
     # 2. Agregar payments por order_id
-    payments_agg = (
-        dataframe_payments.groupby("order_id", as_index=False)
-        .agg(
-            total_pago=("payment_value", "sum"),
-            n_cuotas=("payment_installments", "max"),
-        )
+    payments_agg = dataframe_payments.groupby("order_id", as_index=False).agg(
+        total_pago=("payment_value", "sum"),
+        n_cuotas=("payment_installments", "max"),
     )
 
     # 3. Agregar items por order_id
-    items_agg = (
-        dataframe_items.groupby("order_id", as_index=False)
-        .agg(
-            n_items=("order_item_id", "count"),
-            ticket_total=("price", "sum"),
-        )
+    items_agg = dataframe_items.groupby("order_id", as_index=False).agg(
+        n_items=("order_item_id", "count"),
+        ticket_total=("price", "sum"),
     )
 
     # 4. Joins progresivos usando join_verificado
