@@ -14,11 +14,18 @@ SCHEMA_ORDERS = DataFrameSchema(
         ),
         "order_status": Column(
             str,
-            Check.isin([
-                "delivered", "shipped", "canceled",
-                "unavailable", "invoiced",
-                "processing", "created", "approved",
-            ]),
+            Check.isin(
+                [
+                    "delivered",
+                    "shipped",
+                    "canceled",
+                    "unavailable",
+                    "invoiced",
+                    "processing",
+                    "created",
+                    "approved",
+                ]
+            ),
         ),
         "order_purchase_timestamp": Column(pa.DateTime, nullable=False),
     },
@@ -35,11 +42,11 @@ SCHEMA_ITEMS = DataFrameSchema(
             [Check.greater_than(0), Check.less_than_or_equal_to(7_000)],
             nullable=False,
         ),
-        "freight_value": Column(float, Check.greater_than_or_equal_to(0),
-                                nullable=False),
+        "freight_value": Column(float, Check.greater_than_or_equal_to(0), nullable=False),
     },
     coerce=True,
 )
+
 
 def validar_schema(
     df: pd.DataFrame,
