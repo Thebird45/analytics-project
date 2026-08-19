@@ -9,17 +9,17 @@ TipoMerge = Literal["left", "right", "inner", "outer", "cross", "left_anti", "ri
 
 
 def cargar_csv(ruta: str) -> pd.DataFrame:
-    """Carga un archivo CSV y verifica que contenga al menos una fila de datos.
+    """Carga un CSV y valida que no esté vacío.
 
     Args:
-        ruta: ruta al archivo CSV a cargar.
+        ruta: Ruta del archivo CSV a cargar.
 
     Returns:
         DataFrame con los datos cargados.
 
     Raises:
-        FileNotFoundError: si el archivo no existe en la ruta indicada.
-        ValueError: si el archivo existe pero no contiene filas de datos.
+        FileNotFoundError: Si el archivo no existe.
+        ValueError: Si el archivo no contiene filas.
     """
     try:
         dataframe = cast(pd.DataFrame, pd.read_csv(ruta))  # type: ignore[call-overload]
@@ -34,20 +34,16 @@ def cargar_csv(ruta: str) -> pd.DataFrame:
 
 
 def cargar_olist(data_dir: str) -> dict[str, pd.DataFrame]:
-    """Carga las 5 tablas principales de Olist desde data_dir.
-
-    Registra con print() la forma (filas × columnas) de cada tabla al cargarla.
-    Las columnas de fecha deben cargarse como datetime64, no como object.
+    """Carga las tablas principales de Olist desde un directorio.
 
     Args:
-        data_dir: ruta al directorio que contiene los archivos CSV de Olist.
+        data_dir: Ruta del directorio con los CSV de Olist.
 
     Returns:
-        Dict con keys 'orders', 'items', 'customers', 'payments', 'reviews',
-        cada uno mapeado a su DataFrame correspondiente.
+        Diccionario con cada tabla principal como DataFrame.
 
     Raises:
-        FileNotFoundError: si alguno de los 5 archivos no existe en data_dir.
+        FileNotFoundError: Si falta alguna de las tablas requeridas.
     """
     base_path = Path(data_dir)
 
@@ -121,23 +117,20 @@ def join_verificado(
     how: TipoMerge = "left",
     nombre: str = "join",
 ) -> pd.DataFrame:
-    """Realiza un merge y verifica que el resultado no multiplique filas.
-
-    Un join que multiplica filas indica que la tabla derecha tiene duplicados
-    en la columna clave — error silencioso sin esta verificación.
+    """Hace un merge verificando que no duplique filas.
 
     Args:
-        df_left: DataFrame izquierdo (el que define el número de filas esperado).
-        df_right: DataFrame derecho.
-        on: columna(s) clave del join.
-        how: tipo de join ('left', 'inner', 'outer', 'right').
-        nombre: nombre descriptivo para el mensaje de error.
+        df_left: DataFrame izquierdo.
+        df_right: DataFrame derecho a unir.
+        on: Columna o columnas de unión.
+        how: Tipo de join a ejecutar.
+        nombre: Nombre descriptivo para mensajes de error.
 
     Returns:
-        DataFrame resultante del merge.
+        DataFrame resultado del merge.
 
     Raises:
-        AssertionError: si el resultado tiene más filas que df_left.
+        AssertionError: Si el merge duplica filas o hay claves duplicadas.
     """
     # 1. Guardamos el número de filas esperadas (el total de la tabla izquierda)
     filas_esperadas = len(df_left)
@@ -166,21 +159,13 @@ def join_verificado(
 
 
 def construir_dataset_base(tablas: dict[str, pd.DataFrame]) -> pd.DataFrame:
-    """Combina las tablas de Olist en un único DataFrame analítico.
-
-    Estrategia de joins:
-    - orders × customers → left join on customer_id
-    - + payments_agg → left join on order_id (payments debe agregarse primero)
-    - + items_agg → left join on order_id (items debe agregarse primero)
-
-    Agrega payments antes del join: total_pago (sum) y n_cuotas (max) por order_id.
-    Agrega items antes del join: n_items (count) y ticket_total (sum de price) por order_id.
+    """Combina las tablas de Olist en un dataset base.
 
     Args:
-        tablas: dict retornado por cargar_olist().
+        tablas: Diccionario con las tablas de Olist cargadas.
 
     Returns:
-        DataFrame con una fila por pedido (99,441 filas si los datos son completos).
+        DataFrame consolidado con una fila por pedido.
     """
     # 1. Extraer DataFrames del diccionario
     dataframe_orders = tablas["orders"]

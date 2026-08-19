@@ -53,18 +53,15 @@ def validar_schema(
     schema: pa.DataFrameSchema,
     nombre: str,
 ) -> list[str]:
-    """Valida df contra schema y retorna la lista de errores encontrados.
-
-    No lanza excepción — captura SchemaError y retorna los mensajes como strings
-    para que el pipeline pueda continuar y registrar todos los problemas.
+    """Valida un DataFrame contra un schema y devuelve errores.
 
     Args:
         df: DataFrame a validar.
-        schema: schema pandera contra el cual validar.
-        nombre: nombre descriptivo del DataFrame para los mensajes de error.
+        schema: Schema de Pandera a aplicar.
+        nombre: Nombre descriptivo del dataset.
 
     Returns:
-        Lista de strings con los errores encontrados. Lista vacía si el schema pasa.
+        Lista de mensajes con cada error encontrado.
     """
     try:
         # lazy=True acumula TODOS los errores en vez de detenerse en el primero
@@ -89,25 +86,16 @@ def generar_reporte_calidad(
     errores: list[str],
     nombre: str = "dataset",
 ) -> dict:
-    """Genera un reporte de la operación de calidad con trazabilidad completa.
-
-    Imprime el reporte con print() en el formato:
-    [CALIDAD] nombre: N entrada → M salida (K descartados, X.XX%)
+    """Genera un reporte resumido de calidad para un dataset.
 
     Args:
-        df_entrada: DataFrame antes del filtrado/validación.
-        df_salida: DataFrame después del filtrado/validación.
-        errores: lista de strings con los errores detectados.
-        nombre: nombre descriptivo del dataset para el log.
+        df_entrada: DataFrame antes de validaciones o filtrado.
+        df_salida: DataFrame después de validaciones o filtrado.
+        errores: Lista de errores detectados.
+        nombre: Nombre descriptivo del dataset.
 
     Returns:
-        Dict con keys:
-        - 'nombre': str
-        - 'filas_entrada': int
-        - 'filas_salida': int
-        - 'filas_descartadas': int
-        - 'tasa_rechazo': str (formato "X.XX%")
-        - 'errores': list[str]
+        Diccionario con métricas y errores del reporte de calidad.
     """
     filas_entrada = len(df_entrada)
     filas_salida = len(df_salida)

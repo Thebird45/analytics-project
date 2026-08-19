@@ -15,6 +15,7 @@ venv/
 .ruff_cache/
 .coverage
 htmlcov/
+uv.lock
 
 # Entornos y editores
 .env
