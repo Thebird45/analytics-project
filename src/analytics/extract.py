@@ -182,7 +182,7 @@ def construir_dataset_base(tablas: dict[str, pd.DataFrame]) -> pd.DataFrame:
     # 3. Agregar items por order_id
     items_agg = dataframe_items.groupby("order_id", as_index=False).agg(
         n_items=("order_item_id", "count"),
-        ticket_total=("price", "sum"),
+        precio_total=("price", "sum"),
     )
 
     # 4. Joins progresivos usando join_verificado

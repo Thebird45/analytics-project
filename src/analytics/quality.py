@@ -1,20 +1,19 @@
 """Modulo de calidad de datos: contratos pandera y reporte de trazabilidad."""
 
 import pandas as pd
-import pandera as pa
-from pandera import Check, Column, DataFrameSchema
+import pandera.pandas as pa
 
-SCHEMA_ORDERS = DataFrameSchema(
+SCHEMA_ORDERS = pa.DataFrameSchema(
     columns={
-        "order_id": Column(
+        "order_id": pa.Column(
             str,
-            Check.str_length(32, 32),
+            pa.Check.str_length(32, 32),
             nullable=False,
             unique=True,
         ),
-        "order_status": Column(
+        "order_status": pa.Column(
             str,
-            Check.isin(
+            pa.Check.isin(
                 [
                     "delivered",
                     "shipped",
@@ -27,22 +26,22 @@ SCHEMA_ORDERS = DataFrameSchema(
                 ]
             ),
         ),
-        "order_purchase_timestamp": Column(pa.DateTime, nullable=False),
+        "order_purchase_timestamp": pa.Column(pa.DateTime, nullable=False),
     },
     coerce=True,
 )
-SCHEMA_ITEMS = DataFrameSchema(
+SCHEMA_ITEMS = pa.DataFrameSchema(
     columns={
-        "order_id": Column(str, nullable=False),
-        "order_item_id": Column(int, Check.greater_than_or_equal_to(1)),
-        "product_id": Column(str, nullable=False),
-        "seller_id": Column(str, nullable=False),
-        "price": Column(
+        "order_id": pa.Column(str, nullable=False),
+        "order_item_id": pa.Column(int, pa.Check.greater_than_or_equal_to(1)),
+        "product_id": pa.Column(str, nullable=False),
+        "seller_id": pa.Column(str, nullable=False),
+        "price": pa.Column(
             float,
-            [Check.greater_than(0), Check.less_than_or_equal_to(7_000)],
+            [pa.Check.greater_than(0), pa.Check.less_than_or_equal_to(7_000)],
             nullable=False,
         ),
-        "freight_value": Column(float, Check.greater_than_or_equal_to(0), nullable=False),
+        "freight_value": pa.Column(float, pa.Check.greater_than_or_equal_to(0), nullable=False),
     },
     coerce=True,
 )

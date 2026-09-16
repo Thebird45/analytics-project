@@ -18,14 +18,14 @@ def agregar_features_fecha(df: pd.DataFrame) -> pd.DataFrame:
     entrega = pd.to_datetime(resultado["order_delivered_customer_date"], errors="coerce")
     estimada = pd.to_datetime(resultado["order_estimated_delivery_date"], errors="coerce")
 
-    resultado["tiempo_entrega_dias"] = ((entrega - compra) / pd.Timedelta(days=1)).astype(float)
+    resultado["tiempo_entrega_dias"] = ((entrega - compra) / pd.Timedelta(days=1)).astype(float)  # tiempo que tardo en llegar el pedido
 
-    resultado["retraso_entrega_dias"] = ((entrega - estimada) / pd.Timedelta(days=1)).astype(float)
+    resultado["retraso_entrega_dias"] = ((entrega - estimada) / pd.Timedelta(days=1)).astype(float) # tiempo que se retraso el pedido respecto a la fecha estimada
 
-    resultado["entregado_tarde"] = resultado["retraso_entrega_dias"] > 0
-    resultado["dia_semana_compra"] = compra.dt.dayofweek
-    resultado["es_fin_de_semana"] = resultado["dia_semana_compra"].isin([5, 6])
-    resultado["mes_compra"] = compra.dt.month
+    resultado["entregado_tarde"] = resultado["retraso_entrega_dias"] > 0 #indica si llego tarde
+    resultado["dia_semana_compra"] = compra.dt.dayofweek #Dia que se compro
+    resultado["es_fin_de_semana"] = resultado["dia_semana_compra"].isin([5, 6]) 
+    resultado["mes_compra"] = compra.dt.month 
 
     return resultado
 
@@ -44,7 +44,7 @@ def agregar_encoding_estado(
         Copia del DataFrame con una columna adicional de frecuencia relativa.
     """
     resultado = df.copy()
-    frecuencias = resultado[columna].value_counts(normalize=True)
+    frecuencias = resultado[columna].value_counts(normalize=True) #convierte los resultados de txto a % frecuencia
     resultado[f"{columna}_freq"] = resultado[columna].map(frecuencias)
     return resultado
 
@@ -67,7 +67,7 @@ def agregar_ticket_historico(
         Copia del DataFrame ordenada por fecha con el promedio histórico agregado.
     """
     resultado = df.sort_values(columna_fecha).copy()
-    resultado["ticket_promedio_historico"] = resultado.groupby(columna_cliente, sort=False)[
-        columna_valor
-    ].transform(lambda s: s.expanding().mean().shift(1))
+    resultado["ticket_promedio_historico"] = resultado.groupby(columna_cliente, sort=False)[   #Separa la tabla ppor cada cliente
+        columna_valor 
+    ].transform(lambda s: s.expanding().mean().shift(1)) #Promedio historio, sin incluir el valor actual
     return resultado
