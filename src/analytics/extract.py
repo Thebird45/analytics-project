@@ -89,7 +89,9 @@ def cargar_olist(data_dir: str) -> dict[str, pd.DataFrame]:
             if cols_fecha:
                 df = cast(
                     pd.DataFrame,
-                    pd.read_csv(ruta_archivo, parse_dates=cols_fecha),  # type: ignore[call-overload]
+                    pd.read_csv(  # type: ignore[call-overload]
+                        ruta_archivo, parse_dates=cols_fecha
+                    ),
                 )
             else:
                 df = cast(
