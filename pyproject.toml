@@ -34,6 +34,7 @@ addopts = "-q"
 [tool.ruff]
 line-length = 100
 src = ["src", "tests"]
+extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "D"]
@@ -45,6 +46,8 @@ ignore = ["D203", "D213"]
 "tests/*" = ["D100", "D103", "N803", "N806"]
 # Firma definida por el enunciado del Lab 04 (convencion sklearn: X_train).
 "src/analytics/train.py" = ["N803"]
+# Script de demo: misma convencion sklearn (X, X_train en mayuscula).
+"scripts/*" = ["N806"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
