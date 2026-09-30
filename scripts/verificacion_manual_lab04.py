@@ -18,8 +18,10 @@ def construir_dataset_regresion(tablas: dict) -> tuple:
     df = transform.agregar_encoding_estado(df)
     df = transform.agregar_ticket_historico(df)
 
-    flete_agg = tablas["items"].groupby("order_id", as_index=False).agg(
-        flete_total=("freight_value", "sum")
+    flete_agg = (
+        tablas["items"]
+        .groupby("order_id", as_index=False)
+        .agg(flete_total=("freight_value", "sum"))
     )
     df = df.merge(flete_agg, on="order_id", how="left")
 
@@ -44,8 +46,10 @@ def construir_dataset_clasificacion(tablas: dict) -> tuple:
     df = transform.agregar_encoding_estado(df)
     df = transform.agregar_ticket_historico(df)
 
-    flete_agg = tablas["items"].groupby("order_id", as_index=False).agg(
-        flete_total=("freight_value", "sum")
+    flete_agg = (
+        tablas["items"]
+        .groupby("order_id", as_index=False)
+        .agg(flete_total=("freight_value", "sum"))
     )
     df = df.merge(flete_agg, on="order_id", how="left")
 
@@ -116,9 +120,7 @@ def demo_clasificacion(tablas: dict) -> None:
     print(f"Comparacion vs. baseline: {comparacion}")
 
     # Pregunta 9.3: efecto de class_weight="balanced" sobre el recall
-    pipeline_sin_balanceo = train.entrenar_pipeline_clasificacion(
-        X_train, y_train
-    )
+    pipeline_sin_balanceo = train.entrenar_pipeline_clasificacion(X_train, y_train)
     pipeline_sin_balanceo.named_steps["modelo"].set_params(class_weight=None)
     pipeline_sin_balanceo.fit(X_train, y_train)
     recall_con_balanceo = recall_score(y_eval, y_pred)
