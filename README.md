@@ -11,10 +11,12 @@ lab por lab sobre el dataset Olist.
 ├── data/raw/                   # dataset Olist (no versionado)
 ├── src/analytics/
 │   ├── __init__.py
-│   └── extract.py              # ingesta de datos
+│   ├── extract.py              # ingesta de datos
+│   └── quality.py              # verificacion de calidad de datos
 ├── tests/
 │   ├── test_environment.py     # verificacion del entorno
-│   └── test_extract.py         # tests de cargar_csv
+│   ├── test_extract.py         # tests de cargar_csv
+│   └── test_quality.py         # tests de calidad de datos
 └── pyproject.toml
 ```
 
