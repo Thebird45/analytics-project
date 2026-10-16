@@ -185,6 +185,7 @@ def construir_dataset_base(tablas: dict[str, pd.DataFrame]) -> pd.DataFrame:
     items_agg = dataframe_items.groupby("order_id", as_index=False).agg(
         n_items=("order_item_id", "count"),
         precio_total=("price", "sum"),
+        flete_total=("freight_value", "sum"),
     )
 
     # 4. Joins progresivos usando join_verificado
