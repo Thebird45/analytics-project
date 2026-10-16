@@ -25,3 +25,10 @@ uv.lock
 
 # Tests
 test_environment.pytests/*.py
+
+
+# Notebooks locales (no se versionan)
+notebooks/
+
+# Modelos: se regeneran con `uv run python -m analytics.pipeline`
+models/*.joblib
